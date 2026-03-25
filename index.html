@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SCOUT — Orientamento</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap');
+  :root{--bg:#0F0F0F;--surface:#1A1A1A;--surface2:#242424;--border:#2E2E2E;--text:#F0F0F0;--muted:#6B6B6B;--muted2:#4A4A4A;--accent:#E8FF47;--accent2:#FF6B35;--white:#FFFFFF}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+  .app{max-width:480px;margin:0 auto;padding-bottom:80px;min-height:100vh}
+  .screen{display:none}.screen.active{display:flex;flex-direction:column;min-height:100vh}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;letter-spacing:1px;color:var(--accent)}
+  .step-counter{font-size:12px;color:var(--muted)}
+  .prog-bar{height:2px;background:var(--border);margin:16px 20px 0}
+  .prog-fill{height:100%;background:var(--accent);transition:width .4s ease}
+  .welcome-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 24px}
+  .big-num{font-family:'Syne',sans-serif;font-size:72px;font-weight:800;line-height:1;color:var(--accent);margin-bottom:4px}
+  .welcome-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;line-height:1.2;margin-bottom:16px}
+  .welcome-sub{font-size:15px;line-height:1.7;color:#999;margin-bottom:36px}
+  .meta-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
+  .meta-pill{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:6px 12px;border-radius:20px}
+  .q-body{flex:1;padding:28px 20px 16px;display:flex;flex-direction:column}
+  .q-tag{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+  .q-text{font-family:'Syne',sans-serif;font-size:clamp(17px,4.5vw,21px);font-weight:600;line-height:1.35;margin-bottom:8px;color:var(--white)}
+  .q-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+  .opts{display:flex;flex-direction:column;gap:9px}
+  .opt{display:flex;align-items:center;gap:13px;padding:14px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);width:100%;line-height:1.4;-webkit-user-select:none;user-select:none}
+  .opt.sel{border-color:var(--accent)!important;background:rgba(232,255,71,0.08)!important;color:var(--white)}
+  .opt.msel{border-color:var(--accent2)!important;background:rgba(255,107,53,0.08)!important;color:var(--white)}
+  .opt-icon{font-size:20px;min-width:26px;text-align:center;pointer-events:none}
+  .opt-txt{flex:1;pointer-events:none}
+  .opt-check{width:20px;height:20px;min-width:20px;border:1.5px solid var(--muted2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--bg);pointer-events:none}
+  .opt.msel .opt-check{background:var(--accent2);border-color:var(--accent2)}
+  .multi-label{font-size:12px;color:var(--muted);margin-bottom:10px;text-align:right}
+  .slider-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:14px}
+  input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;background:var(--accent);border-radius:50%;cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:28px;height:28px;background:var(--accent);border-radius:50%;cursor:pointer;border:none}
+  .slider-readout{text-align:center;font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--accent);margin-top:14px;min-height:22px}
+  textarea{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);resize:none;min-height:120px;outline:none;line-height:1.6}
+  textarea:focus{border-color:var(--accent)}
+  textarea::placeholder{color:var(--muted2)}
+  .bottom-bar{padding:10px 20px 28px;display:flex;flex-direction:column;gap:6px}
+  .warn{font-size:12px;color:var(--accent2);min-height:16px;text-align:right}
+  .btns{display:flex;gap:10px}
+  .btn{padding:15px 0;border-radius:12px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;border:none;letter-spacing:0.5px}
+  .btn:active{opacity:.75}
+  .btn-main{background:var(--accent);color:var(--bg);flex:1}
+  .btn-back{background:var(--surface2);color:var(--muted);border:1px solid var(--border);padding:15px 22px;flex:0 0 auto}
+  .btn-full{width:100%;border-radius:12px}
+  .result-body{flex:1;padding:24px 20px 0}
+  .result-eyebrow{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .result-name{font-family:'Syne',sans-serif;font-size:clamp(22px,5.5vw,32px);font-weight:800;line-height:1.2;color:var(--white);margin-bottom:12px}
+  .result-summary{font-size:14px;line-height:1.75;color:#AAA}
+  .section-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:28px 0 12px}
+  .strength-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px}
+  .strength-label{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--accent);margin-bottom:6px}
+  .strength-desc{font-size:13px;color:#999;line-height:1.6}
+  .sector-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent2);border-radius:14px;padding:16px;margin-bottom:10px}
+  .sector-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px}
+  .sector-why{font-size:13px;color:#999;line-height:1.6;margin-bottom:10px}
+  .sector-roles{display:flex;flex-wrap:wrap;gap:6px}
+  .role-pill{background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.2);color:var(--accent2);font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500}
+  .action-box{background:rgba(232,255,71,0.06);border:1px solid rgba(232,255,71,0.18);border-radius:14px;padding:20px;margin:24px 0}
+  .action-label{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .action-text{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--white);line-height:1.5}
+  .restart-btn{display:block;width:100%;margin:8px 0 40px;padding:15px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="screen active" id="s-welcome">
+  <div class="topbar"><div class="logo">SCOUT</div></div>
+  <div class="welcome-body">
+    <div class="big-num">6</div>
+    <div class="welcome-title">domande.<br>Niente filosofia.</div>
+    <div class="welcome-sub">Alla fine sai quali sono i tuoi punti di forza reali e in che tipo di ambienti potresti stare bene. Basato su quello che fai, non su quello che pensi di te.</div>
+    <div class="meta-row">
+      <div class="meta-pill">⏱ 3 minuti</div>
+      <div class="meta-pill">📵 Nessun dato salvato</div>
+      <div class="meta-pill">⚡ Funziona offline</div>
+    </div>
+    <button class="btn btn-main btn-full" id="btn-start">Inizia →</button>
+  </div>
+</div>
+
+<div class="screen" id="s-quiz">
+  <div class="topbar">
+    <div class="logo">SCOUT</div>
+    <div class="step-counter" id="step-counter">1 / 6</div>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="q-body" id="q-body"></div>
+  <div class="bottom-bar">
+    <div class="warn" id="warn"></div>
+    <div class="btns">
+      <button class="btn btn-back" id="btn-prev">←</button>
+      <button class="btn btn-main" id="btn-next">Avanti →</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s-result">
+  <div class="topbar"><div class="logo">SCOUT</div></div>
+  <div class="result-body" id="result-body"></div>
+</div>
+
+</div>
+<script>
+var QS=[
+  {id:'noia',type:'single',tag:'Partiamo dal concreto',text:'Cosa ti stufa più velocemente?',sub:'Quello che odi fare di più ti dice qualcosa su come funzioni.',
+   opts:[{e:'🔁',t:'Fare la stessa cosa uguale ogni giorno'},{e:'🗣',t:'Stare tutto il giorno a parlare con gente sconosciuta'},{e:'📋',t:'Seguire istruzioni senza capire il perché'},{e:'⏳',t:'Lavorare su qualcosa e non vedere mai i risultati'}]},
+  {id:'ruolo',type:'single',tag:'Cosa fai senza accorgertene',text:'In un gruppo, che ruolo prendi spontaneamente?',sub:'Non pensare a cosa dovresti fare. Cosa succede davvero.',
+   opts:[{e:'🧭',t:'Organizzo, divido i compiti, tengo le cose in ordine'},{e:'💬',t:'Spiego, convinco, medito i conflitti'},{e:'🔧',t:'Risolvo il problema pratico mentre gli altri discutono'},{e:'💡',t:'Propongo idee nuove o modi diversi di fare le cose'}]},
+  {id:'complimenti',type:'multi',max:2,tag:'Come ti vedono gli altri',text:'Per cosa ti fanno i complimenti più spesso?',sub:'Scegli 2. Anche "sei sempre calmo" o "capisci subito" contano.',
+   opts:[{e:'🎯',t:'Vado dritto al punto, non mi perdo in chiacchiere'},{e:'🤝',t:'Metto a proprio agio le persone'},{e:'⚡',t:'Faccio le cose velocemente e bene'},{e:'🔍',t:'Noto dettagli che gli altri si perdono'},{e:'🎨',t:'Ho buon gusto, idee originali, senso estetico'},{e:'🧱',t:"Sono affidabile — se dico una cosa la faccio"}]},
+  {id:'ambiente',type:'single',tag:'Il tuo ambiente',text:'In quale situazione rendi di più?',sub:'Nessuna risposta è migliore delle altre.',
+   opts:[{e:'🎧',t:"Da solo/a, concentrato/a, con i miei tempi"},{e:'👥',t:'In un team piccolo dove ci si conosce bene'},{e:'🌍',t:'In contesti che cambiano spesso — nuove persone, nuovi posti'},{e:'🛠',t:"Quando c'è un problema concreto da risolvere"}]},
+  {id:'energia',type:'slider',tag:"Dove metti l'energia",text:'Cosa ti soddisfa di più alla fine di un lavoro?',sub:'Spostati verso il lato che senti più tuo.',labelLeft:'Che funzioni bene',labelRight:'Che sia bello / originale'},
+  {id:'blocco',type:'text',tag:"L'ultima",text:'Completa la frase — scrivi la prima cosa che ti viene:',sub:"Nessuno la vede. È solo per te.",placeholder:'"Di solito mi blocco quando devo..."'}
+];
+
+var cur=0,ans={};
+
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});document.getElementById(id).classList.add('active')}
+
+function sliderLabel(v){v=parseInt(v);if(v<20)return'Tutto sul funzionamento';if(v<40)return'Più funzionamento';if(v<60)return'Equilibrio';if(v<80)return'Più estetica / originalità';return'Tutto su estetica e originalità'}
+
+function updateTrack(el){var p=((el.value-el.min)/(el.max-el.min))*100;el.style.background='linear-gradient(90deg,var(--accent) '+p+'%,var(--border) '+p+'%)'}
+
+function render(){
+  var q=QS[cur],total=QS.length;
+  document.getElementById('step-counter').textContent=(cur+1)+' / '+total;
+  document.getElementById('prog-fill').style.width=Math.round((cur/total)*100)+'%';
+  document.getElementById('btn-prev').style.visibility=cur===0?'hidden':'visible';
+  document.getElementById('warn').textContent='';
+  var inner='';
+  if(q.type==='single'){
+    var sel=(ans[q.id]!==undefined)?ans[q.id]:-1;
+    inner='<div class="opts">';
+    q.opts.forEach(function(o,i){inner+='<div class="opt'+(sel===i?' sel':'')+'" data-type="single" data-i="'+i+'"><span class="opt-icon">'+o.e+'</span><span class="opt-txt">'+o.t+'</span></div>'});
+    inner+='</div>';
+  } else if(q.type==='multi'){
+    var selM=ans[q.id]||[];
+    inner='<div class="multi-label">Seleziona '+q.max+'</div><div class="opts">';
+    q.opts.forEach(function(o,i){var on=selM.indexOf(i)>-1;inner+='<div class="opt'+(on?' msel':'')+'" data-type="multi" data-i="'+i+'"><span class="opt-icon">'+o.e+'</span><span class="opt-txt">'+o.t+'</span><span class="opt-check">'+(on?'✓':'')+'</span></div>'});
+    inner+='</div>';
+  } else if(q.type==='slider'){
+    var val=(ans[q.id]!==undefined)?ans[q.id]:50;
+    if(ans[q.id]===undefined)ans[q.id]=50;
+    inner='<div class="slider-ends"><span>'+q.labelLeft+'</span><span>'+q.labelRight+'</span></div><input type="range" id="rng" min="0" max="100" value="'+val+'"><div class="slider-readout" id="sval">'+sliderLabel(val)+'</div>';
+  } else if(q.type==='text'){
+    var tv=ans[q.id]||'';
+    inner='<textarea id="txta" placeholder="'+q.placeholder+'">'+tv+'</textarea>';
+  }
+  document.getElementById('q-body').innerHTML='<div class="q-tag">'+q.tag+'</div><div class="q-text">'+q.text+'</div>'+(q.sub?'<div class="q-sub">'+q.sub+'</div>':'')+inner;
+  if(q.type==='slider'){var rng=document.getElementById('rng');updateTrack(rng);rng.addEventListener('input',function(){ans[q.id]=parseInt(this.value);document.getElementById('sval').textContent=sliderLabel(this.value);updateTrack(this)})}
+  if(q.type==='text'){document.getElementById('txta').addEventListener('input',function(){ans[q.id]=this.value})}
+}
+
+document.getElementById('q-body').addEventListener('click',function(e){
+  var opt=e.target.closest('.opt');
+  if(!opt)return;
+  var q=QS[cur],i=parseInt(opt.getAttribute('data-i')),type=opt.getAttribute('data-type');
+  document.getElementById('warn').textContent='';
+  if(type==='single'){
+    ans[q.id]=i;
+    document.querySelectorAll('#q-body .opt').forEach(function(b){b.classList.remove('sel')});
+    opt.classList.add('sel');
+  } else if(type==='multi'){
+    if(!ans[q.id])ans[q.id]=[];
+    var arr=ans[q.id],pos=arr.indexOf(i);
+    if(pos>-1){arr.splice(pos,1);opt.classList.remove('msel');opt.querySelector('.opt-check').textContent=''}
+    else{if(arr.length>=q.max){document.getElementById('warn').textContent='Scegline solo '+q.max+'.';return}arr.push(i);opt.classList.add('msel');opt.querySelector('.opt-check').textContent='✓'}
+  }
+});
+
+function isOk(){var q=QS[cur],a=ans[q.id];if(q.type==='single')return a!==undefined&&a>=0;if(q.type==='multi')return Array.isArray(a)&&a.length>0;if(q.type==='slider')return true;if(q.type==='text')return typeof a==='string'&&a.trim().length>2;return false}
+
+document.getElementById('btn-start').addEventListener('click',function(){show('s-quiz');render()});
+document.getElementById('btn-next').addEventListener('click',function(){if(!isOk()){document.getElementById('warn').textContent='Scegli una risposta per continuare.';return}if(cur<QS.length-1){cur++;render()}else{showResult(buildProfile())}});
+document.getElementById('btn-prev').addEventListener('click',function(){if(cur>0){cur--;render()}});
+
+function buildProfile(){
+  var noia=ans['noia'],ruolo=ans['ruolo'],complimenti=ans['complimenti']||[],ambiente=ans['ambiente'],energia=ans['energia']||50;
+  var score={exec:0,creator:0,connector:0,analyst:0};
+  if(noia===0){score.creator+=2;score.analyst+=1}if(noia===1){score.analyst+=2;score.exec+=1}if(noia===2){score.creator+=1;score.connector+=1}if(noia===3){score.exec+=2;score.creator+=1}
+  if(ruolo===0)score.exec+=3;else if(ruolo===1)score.connector+=3;else if(ruolo===2){score.exec+=2;score.analyst+=1}else if(ruolo===3)score.creator+=3;
+  complimenti.forEach(function(c){if(c===0)score.exec+=2;else if(c===1)score.connector+=2;else if(c===2){score.exec+=1;score.analyst+=1}else if(c===3)score.analyst+=3;else if(c===4)score.creator+=3;else if(c===5)score.exec+=2});
+  if(ambiente===0){score.analyst+=2;score.creator+=1}else if(ambiente===1){score.connector+=1;score.exec+=1}else if(ambiente===2){score.connector+=2;score.creator+=1}else if(ambiente===3){score.exec+=2;score.analyst+=1}
+  if(energia<35){score.exec+=1;score.analyst+=1}else if(energia>=65)score.creator+=2;
+  var top='exec';Object.keys(score).forEach(function(k){if(score[k]>score[top])top=k});
+  var sorted=Object.keys(score).sort(function(a,b){return score[b]-score[a]});
+  return generate(top,sorted[1],{noia:noia,ruolo:ruolo,complimenti:complimenti,ambiente:ambiente,energia:energia});
+}
+
+var PROFILES={
+  exec:{titolo:'Chi fa succedere le cose',sintesi:function(a){var s='Mentre gli altri parlano, tu stai già facendo. ';if(a.ambiente===0)s+='Lavori meglio da solo/a, con obiettivi chiari e senza distrazioni. ';else if(a.ambiente===1)s+='Rendi bene in team piccoli, dove ognuno sa cosa deve fare. ';else s+='Ti adatti a contesti diversi, ma hai sempre bisogno di vedere avanzamento concreto. ';s+='Il tuo punto di forza non è parlare delle cose — è portarle a termine.';return s},forze:[{n:'Affidabilità operativa',d:'Quando dici che fai una cosa, la fai. È raro e vale tanto sul lavoro.'},{n:'Orientamento al risultato',d:'Non ti perdi in dettagli inutili — vai dritto a quello che conta.'},{n:'Gestione pratica',d:'Sai organizzare risorse, tempi e priorità senza aspettare istruzioni.'}],passo:'Cerca su YouTube "una giornata da project manager" oppure da tecnico nel settore che ti incuriosisce di più — 10 minuti per capire se ti ci vedi.'},
+  creator:{titolo:'Chi vede quello che gli altri non vedono',sintesi:function(a){var s='Hai un modo originale di leggere le cose — noti connessioni e possibilità che altri si perdono. ';if(a.energia>=65)s+='Per te un lavoro deve essere bello oltre che funzionare: forma e contenuto sono la stessa cosa. ';else s+='Sei creativo/a ma con i piedi per terra: le tue idee devono anche funzionare. ';s+='Lavori meglio quando hai libertà di sperimentare, non quando devi seguire un manuale.';return s},forze:[{n:'Pensiero non lineare',d:'Trovi soluzioni che a chi ragiona in modo standard non vengono neanche in mente.'},{n:'Sensibilità estetica',d:'Capisci cosa funziona visivamente e comunicativamente, non solo tecnicamente.'},{n:'Originale per natura',d:"Non hai bisogno di sforzarti per essere diverso/a — è il tuo punto di partenza."}],passo:'Prendi un problema che vedi ogni giorno e prova a ridisegnarlo su carta — non per farlo bene, ma per vedere come pensi.'},
+  connector:{titolo:'Chi tiene insieme le persone',sintesi:function(a){var s='Le persone si fidano di te facilmente, spesso senza sapere bene perché. ';if(a.ruolo===1)s+="In un gruppo sei quello/a che fa da collante — spiega, media, tiene il clima. ";else s+="Anche se non cerchi sempre il centro dell'attenzione, hai un'influenza reale su chi ti sta intorno. ";s+='In ambienti dove conta costruire relazioni e comunicare, sei avvantaggiato/a rispetto alla maggior parte.';return s},forze:[{n:'Intelligenza relazionale',d:'Capisci le dinamiche tra le persone e sai come muoverti senza creare frizioni.'},{n:'Comunicazione naturale',d:'Spieghi le cose in modo che le persone capiscano — e si sentano ascoltate.'},{n:'Costruisci fiducia',d:'Le persone si aprono con te. In quasi ogni contesto lavorativo, questo è un vantaggio enorme.'}],passo:'Parla con qualcuno che fa il lavoro che ti incuriosisce di più — una sola domanda: "Cosa ti piace davvero di questo lavoro?"'},
+  analyst:{titolo:'Chi capisce prima degli altri',sintesi:function(a){var s='Noti cose che gli altri si perdono — dettagli, incongruenze, pattern. ';if(a.ambiente===0)s+='Lavori meglio da solo/a: il silenzio e la concentrazione sono le tue condizioni ottimali. ';else s+='Puoi lavorare con altri, ma hai bisogno di spazio mentale per elaborare davvero. ';s+="Il tuo valore non è la velocità — è la profondità. In un mondo di analisi superficiali, questo conta.";return s},forze:[{n:'Lettura critica',d:'Vai oltre la superficie — cerchi il perché, non solo il cosa.'},{n:'Attenzione ai dettagli',d:'Noti errori, eccezioni e sfumature che a chi va di fretta sfuggono.'},{n:'Pensiero strutturato',d:'Prima di agire, capisci la situazione. Questo riduce gli errori.'}],passo:"Scegli un argomento che ti ha sempre incuriosito e cerca un approfondimento su come funziona davvero — non Wikipedia, qualcosa di più lungo."}
+};
+
+var SETTORI={
+  'exec+creator':[{n:'Design industriale e prodotto',p:'Combina esecuzione concreta con pensiero creativo.',r:['Product designer','Sviluppatore prodotto','Prototipista industriale']},{n:'Produzione video ed eventi',p:'Alta energia, esecuzione sotto pressione, risultato visibile.',r:['Production manager','Coordinatore eventi','Responsabile set']},{n:'Artigianato digitale e maker',p:'Creare con le mani o con il codice qualcosa che funziona davvero.',r:['Sviluppatore front-end','Maker / progettista 3D','Falegname / artigiano CNC']}],
+  'exec+connector':[{n:'Gestione operativa e logistica',p:'Organizzare persone, spazi e tempi in modo che tutti capiscano cosa fare.',r:['Operations manager','Coordinatore logistico','Store manager']},{n:'Edilizia e costruzioni',p:'Ambienti concreti dove si prendono decisioni rapide e si gestiscono squadre.',r:['Capo cantiere','Geometra','Responsabile tecnico']},{n:'Commerciale e vendite',p:'Portare risultati costruendo relazioni reali nel tempo.',r:['Area manager','Tecnico commerciale','Key account']}],
+  'exec+analyst':[{n:'Tecnico specializzato',p:'Precisione e risultati concreti sono la stessa cosa.',r:['Tecnico automazione','Elettricista industriale','Manutentore specializzato']},{n:'Informatica e sviluppo software',p:'Risolvere problemi reali con codice — build, test, deploy.',r:['Sviluppatore back-end','DevOps','Tecnico sistemi']},{n:'Gestione qualità e processi',p:'Trovare dove le cose si rompono e sistemarle prima che causino problemi.',r:['Quality manager','Analista processi','Tecnico HSE']}],
+  'creator+exec':[{n:'Comunicazione visiva',p:'Ogni scelta visiva deve comunicare qualcosa — estetica e funzione insieme.',r:['Graphic designer','Art director','Motion designer']},{n:'Architettura e interior design',p:'Progettare spazi che funzionano bene e hanno senso visivo.',r:['Architetto','Interior designer','Progettista BIM']},{n:'Gaming e videogiochi',p:'Creatività e tecnica inseparabili.',r:['Game designer','Level designer','Sviluppatore Unity/Unreal']}],
+  'creator+connector':[{n:'Marketing e brand',p:'Costruire identità e storie che le persone sentono loro.',r:['Brand strategist','Social media manager','Content creator']},{n:'Moda e stilismo',p:'Estetica e relazioni con clienti e fornitori entrambe essenziali.',r:['Stylist','Visual merchandiser','Buyer moda']},{n:'Comunicazione e giornalismo',p:'Trovare la storia, raccontarla bene, farla arrivare.',r:['Giornalista','Copywriter','Content strategist']}],
+  'creator+analyst':[{n:'UX e ricerca utente',p:'Capire come le persone usano le cose e ridisegnarle meglio.',r:['UX designer','Ricercatore utente','Product analyst']},{n:'Fotografia e produzione visiva',p:'Occhio tecnico e senso estetico insieme.',r:['Fotografo','Direttore della fotografia','Retoucher']},{n:'Musica e produzione audio',p:'Creatività rigorosa — orecchio critico quanto intuizione.',r:['Produttore musicale','Sound designer','Tecnico del suono']}],
+  'connector+exec':[{n:'Risorse umane e selezione',p:'Capire le persone e aiutare le organizzazioni a trovare chi funziona.',r:['HR specialist','Recruiter','Talent manager']},{n:'Turismo e ospitalità',p:'La qualità dipende dalla qualità delle relazioni.',r:['Hotel manager','Tour operator','Guest relations']},{n:'Formazione aziendale',p:'Trasferire competenze in modo che le persone le usino davvero.',r:['Formatore','Learning specialist','Coach aziendale']}],
+  'connector+creator':[{n:'Educazione e insegnamento',p:'Spiegare cose complesse con creatività e relazione reale.',r:['Insegnante specializzato','Educatore','Tutor senior']},{n:'Social media e community',p:'Costruire comunità autentiche intorno a brand o cause.',r:['Community manager','Social strategist','Influencer marketing']},{n:'Pubbliche relazioni',p:'Gestire reputazione ed esterne con creatività e diplomazia.',r:['PR manager','Portavoce','Ufficio stampa']}],
+  'connector+analyst':[{n:'Psicologia e counseling',p:'Capire le persone in profondità e aiutarle concretamente.',r:['Psicologo','Counselor','Mediatore']},{n:'Sanità e professioni di cura',p:'Relazione e competenza tecnica entrambe indispensabili.',r:['Infermiere/a','Fisioterapista','Logopedista']},{n:'Ricerca sociale',p:'Capire i comportamenti collettivi e trasformarli in dati utili.',r:['Ricercatore sociale','Analista qualitativo','Consulente welfare']}],
+  'analyst+exec':[{n:'Finanza e controllo',p:'Numeri che producono decisioni concrete, non solo report.',r:['Controller','Analista finanziario','Revisore']},{n:'Ingegneria industriale',p:'Ottimizzare processi fisici con rigore tecnico.',r:['Ingegnere di processo','Tecnologo','Project engineer']},{n:'Cybersecurity e IT',p:'Trovare le falle prima che le trovino gli altri.',r:['Analista sicurezza','Ethical hacker','Sistemista']}],
+  'analyst+creator':[{n:'Scienza e ricerca applicata',p:'Scoprire come funzionano le cose e usarlo per qualcosa di concreto.',r:['Ricercatore','Chimico industriale','Biotecnologo']},{n:'Data e intelligenza artificiale',p:'Dare struttura al caos di dati con precisione e visione.',r:['Data analyst','ML engineer','Data scientist']},{n:'Editoria e saggistica',p:'Approfondire argomenti complessi e renderli accessibili.',r:['Redattore','Saggista','Editor']}],
+  'analyst+connector':[{n:'Diritto e consulenza',p:'Capire sistemi complessi e tradurli in linguaggio chiaro.',r:['Consulente legale','Paralegal','Compliance officer']},{n:'Medicina e diagnostica',p:'Osservare, collegare indizi, dare risposte precise.',r:['Medico','Specialista diagnostico','Nutrizionista']},{n:'Economia e politiche pubbliche',p:'Analizzare sistemi sociali e proporre soluzioni.',r:['Economista','Policy advisor','Funzionario pubblico']}]
+};
+
+function generate(main,sub,a){
+  var p=PROFILES[main];
+  var key=main+'+'+sub;
+  var settori=SETTORI[key]||SETTORI['exec+analyst'];
+  return{titolo:p.titolo,sintesi:p.sintesi(a),forze:p.forze,settori:settori,passo:p.passo};
+}
+
+function showResult(p){
+  var fh=p.forze.map(function(f){return'<div class="strength-card"><div class="strength-label">'+f.n+'</div><div class="strength-desc">'+f.d+'</div></div>'}).join('');
+  var sh=p.settori.map(function(s){var rr=s.r.map(function(r){return'<span class="role-pill">'+r+'</span>'}).join('');return'<div class="sector-card"><div class="sector-name">'+s.n+'</div><div class="sector-why">'+s.p+'</div><div class="sector-roles">'+rr+'</div></div>'}).join('');
+  document.getElementById('result-body').innerHTML=
+    '<div class="result-eyebrow">Il tuo profilo</div>'+
+    '<div class="result-name">'+p.titolo+'</div>'+
+    '<div class="result-summary">'+p.sintesi+'</div>'+
+    '<div class="section-title">Punti di forza reali</div>'+fh+
+    '<div class="section-title">Ambienti in cui potresti stare bene</div>'+sh+
+    '<div class="action-box"><div class="action-label">⚡ Prossimo passo</div><div class="action-text">'+p.passo+'</div></div>'+
+    '<button class="restart-btn" id="btn-restart">↩ Ricomincia</button>'+
+    '<div style="height:40px"></div>';
+  show('s-result');
+  document.getElementById('btn-restart').addEventListener('click',function(){cur=0;ans={};show('s-welcome')});
+}
+</script>
+</body>
+</html>
